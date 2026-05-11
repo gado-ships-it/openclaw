@@ -168,12 +168,19 @@ function expectQuotedOptions(
   options: unknown,
   expected: { id: string; fromMe: boolean; participant: string; body: string },
 ) {
-  const quoted = requireRecord(requireRecord(options, "reply options").quoted, "quoted message");
-  const key = requireRecord(quoted.key, "quoted key");
-  expect(key.id).toBe(expected.id);
-  expect(key.fromMe).toBe(expected.fromMe);
-  expect(key.participant).toBe(expected.participant);
-  expect(quoted.message).toEqual({ conversation: expected.body });
+  // The wire shape mirrors whatsmeow / wacli: just stanzaId + participant,
+  // no quotedMessage body. `body` is no longer asserted here because the
+  // recipient client resolves the original from its local store via the
+  // stanza id (see quoted-message.ts:buildQuotedContextInfo).
+  void expected.body;
+  void expected.fromMe;
+  const contextInfo = requireRecord(
+    requireRecord(options, "reply options").quotedContextInfo,
+    "quoted contextInfo",
+  );
+  expect(contextInfo.stanzaId).toBe(expected.id);
+  expect(contextInfo.participant).toBe(expected.participant);
+  expect(contextInfo.quotedMessage).toBeUndefined();
 }
 
 function mockSecondReplySuccess(msg: WebInboundMsg) {

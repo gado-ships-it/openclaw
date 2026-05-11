@@ -4,6 +4,10 @@ Docs: https://docs.openclaw.ai
 
 ## Unreleased
 
+### Fixes
+
+- WhatsApp: send quoted-reply `contextInfo` on the outbound payload (stanzaId + participant only, no fabricated `quotedMessage`) instead of routing through Baileys' `MiscMessageGenerationOptions.quoted`, which always synthesised `contextInfo.quotedMessage = { conversation: "" }` and silently broke the threaded-quote affordance on mobile clients. The new wire shape matches whatsmeow / wacli so the recipient resolves the original message from its local store via the stanza id.
+
 ### Changes
 
 - Providers/fal: route GPT Image 2 and Nano Banana 2 reference-image edit requests to `/edit` with `image_urls` array, enforce NB2 edit geometry using `aspect_ratio` and `resolution` params, lift Fal edit mode input-image caps to 10 for GPT Image 2 and 14 for Nano Banana 2, and allow aspect-ratio hints in edit mode. (#77295) Thanks @leoge007.

@@ -13,6 +13,7 @@ import {
 import { logVerbose, shouldLogVerbose } from "openclaw/plugin-sdk/runtime-env";
 import type { WhatsAppSendResult } from "../inbound/send-result.js";
 import { listWhatsAppSendResultMessageIds } from "../inbound/send-result.js";
+import type { WhatsAppReplyOptions } from "../inbound/types.js";
 import { loadWebMedia } from "../media.js";
 import {
   type DeliverableWhatsAppOutboundPayload,
@@ -21,7 +22,7 @@ import {
   prepareWhatsAppOutboundMedia,
   sendWhatsAppOutboundWithRetry,
 } from "../outbound-media-contract.js";
-import { buildQuotedMessageOptions, lookupInboundMessageMeta } from "../quoted-message.js";
+import { buildQuotedContextInfo, lookupInboundMessageMeta } from "../quoted-message.js";
 import { newConnectionId } from "../reconnect.js";
 import { formatError } from "../session.js";
 import { convertMarkdownTables } from "../text-runtime.js";
@@ -132,7 +133,7 @@ export async function deliverWebReply(params: {
   const textChunks = chunkMarkdownTextWithMode(convertedText, textLimit, chunkMode);
   const mediaList = normalizedReply.mediaUrls ?? [];
 
-  const getQuote = () => {
+  const getQuote = (): WhatsAppReplyOptions | undefined => {
     if (!replyResult.replyToId) {
       return undefined;
     }
@@ -140,13 +141,13 @@ export async function deliverWebReply(params: {
     // per-message target.  Look up cached metadata for the specific
     // message being quoted — msg.body may be a combined batch body.
     const cached = lookupInboundMessageMeta(msg.accountId, msg.chatId, replyResult.replyToId);
-    return buildQuotedMessageOptions({
+    const quotedContextInfo = buildQuotedContextInfo({
       messageId: replyResult.replyToId,
       remoteJid: msg.chatId,
       fromMe: cached?.fromMe ?? false,
       participant: cached?.participant ?? (msg.chatType === "group" ? msg.senderJid : undefined),
-      messageText: cached?.body ?? "",
     });
+    return quotedContextInfo ? { quotedContextInfo } : undefined;
   };
 
   const sendWithRetry = async <T>(fn: () => Promise<T>, label: string, maxAttempts = 3) => {

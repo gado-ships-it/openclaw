@@ -14,7 +14,11 @@ import { defaultRuntime } from "openclaw/plugin-sdk/runtime-env";
 import { createSubsystemLogger } from "openclaw/plugin-sdk/runtime-env";
 import { readWebSelfIdentityForDecision, WhatsAppAuthUnstableError } from "../auth-store.js";
 import { getPrimaryIdentityId, resolveComparableIdentity } from "../identity.js";
-import { cacheInboundMessageMeta } from "../quoted-message.js";
+import {
+  attachQuotedContextInfoToContent,
+  cacheInboundMessageMeta,
+  stripQuotedContextInfo,
+} from "../quoted-message.js";
 import { DEFAULT_RECONNECT_POLICY, computeBackoff, sleepWithAbort } from "../reconnect.js";
 import type { OpenClawConfig } from "../runtime-api.js";
 import { createWaSocket, formatError, getStatusCode, waitForWaConnection } from "../session.js";
@@ -49,7 +53,7 @@ import {
 import { DisconnectReason, isJidGroup, saveMediaBuffer } from "./runtime-api.js";
 import { createWebSendApi } from "./send-api.js";
 import { normalizeWhatsAppSendResult } from "./send-result.js";
-import type { WebInboundMessage, WebListenerCloseReason } from "./types.js";
+import type { WebInboundMessage, WebListenerCloseReason, WhatsAppReplyOptions } from "./types.js";
 
 const LOGGED_OUT_STATUS = DisconnectReason?.loggedOut ?? 401;
 const RECONNECT_IN_PROGRESS_ERROR = "no active socket - reconnection in progress";
@@ -691,24 +695,21 @@ export async function attachWebInboxToSocket(
         logWhatsAppVerbose(options.verbose, `Presence update failed: ${String(err)}`);
       }
     };
-    const reply = async (text: string, options?: MiscMessageGenerationOptions) => {
+    const reply = async (text: string, options?: WhatsAppReplyOptions) => {
       const resolved = await resolveOutboundMentionsForGroup(chatJid, text);
-      const result = await sendTrackedMessage(
-        chatJid,
+      const content = attachQuotedContextInfoToContent(
         addWhatsAppOutboundMentionsToContent({ text: resolved.text }, resolved.mentionedJids),
-        options,
+        options?.quotedContextInfo,
       );
+      const result = await sendTrackedMessage(chatJid, content, stripQuotedContextInfo(options));
       return normalizeWhatsAppSendResult(result, "text");
     };
-    const sendMedia = async (
-      payload: AnyMessageContent,
-      options?: MiscMessageGenerationOptions,
-    ) => {
-      const result = await sendTrackedMessage(
-        chatJid,
+    const sendMedia = async (payload: AnyMessageContent, options?: WhatsAppReplyOptions) => {
+      const content = attachQuotedContextInfoToContent(
         await applyOutboundMentionsToContent(chatJid, payload),
-        options,
+        options?.quotedContextInfo,
       );
+      const result = await sendTrackedMessage(chatJid, content, stripQuotedContextInfo(options));
       return normalizeWhatsAppSendResult(result, "media");
     };
     const timestamp = inbound.messageTimestampMs;
