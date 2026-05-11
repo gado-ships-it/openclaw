@@ -6,7 +6,7 @@ import type {
 } from "baileys";
 import { recordChannelActivity } from "openclaw/plugin-sdk/channel-activity-runtime";
 import { isWhatsAppNewsletterJid } from "../normalize.js";
-import { buildQuotedMessageOptions } from "../quoted-message.js";
+import { attachQuotedContextInfoToContent, buildQuotedContextInfo } from "../quoted-message.js";
 import { toWhatsappJid, toWhatsappJidWithLid } from "../text-runtime.js";
 import {
   addWhatsAppOutboundMentionsToContent,
@@ -108,26 +108,23 @@ export function createWebSendApi(params: {
         payload = { text: resolvedPayloadText.text };
       }
       payload = addWhatsAppOutboundMentionsToContent(payload, resolvedPayloadText.mentionedJids);
-      const quotedOpts = buildQuotedMessageOptions({
+      const quotedContextInfo = buildQuotedContextInfo({
         messageId: sendOptions?.quotedMessageKey?.id,
         remoteJid: sendOptions?.quotedMessageKey?.remoteJid,
         fromMe: sendOptions?.quotedMessageKey?.fromMe,
         participant: sendOptions?.quotedMessageKey?.participant,
-        messageText: sendOptions?.quotedMessageKey?.messageText,
       });
-      const result = quotedOpts
-        ? await params.sock.sendMessage(jid, payload, quotedOpts)
-        : await params.sock.sendMessage(jid, payload);
+      payload = attachQuotedContextInfoToContent(payload, quotedContextInfo);
+      const result = await params.sock.sendMessage(jid, payload);
       const results = [normalizeWhatsAppSendResult(result, mediaBuffer ? "media" : "text")];
       if (shouldSendAudioText) {
         const resolvedAudioText = await resolveMentions(jid, text);
-        const textPayload = addWhatsAppOutboundMentionsToContent(
+        let textPayload: AnyMessageContent = addWhatsAppOutboundMentionsToContent(
           { text: resolvedAudioText.text },
           resolvedAudioText.mentionedJids,
         );
-        const textResult = quotedOpts
-          ? await params.sock.sendMessage(jid, textPayload, quotedOpts)
-          : await params.sock.sendMessage(jid, textPayload);
+        textPayload = attachQuotedContextInfoToContent(textPayload, quotedContextInfo);
+        const textResult = await params.sock.sendMessage(jid, textPayload);
         results.push(normalizeWhatsAppSendResult(textResult, "text"));
       }
       const accountId = sendOptions?.accountId ?? params.defaultAccountId;

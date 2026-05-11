@@ -349,7 +349,7 @@ describe("createWebSendApi", () => {
     expect(sendMessage).toHaveBeenCalledWith("123@s.whatsapp.net", { text: "hello" });
   });
 
-  it("preserves the quoted remoteJid provided by the outbound adapter", async () => {
+  it("attaches the quoted reply on the content's contextInfo, not via options.quoted", async () => {
     await api.sendMessage("+1555", "hello", undefined, undefined, {
       quotedMessageKey: {
         id: "quoted-1",
@@ -360,13 +360,20 @@ describe("createWebSendApi", () => {
       },
     });
 
+    // Wire shape matches whatsmeow / wacli: stanzaId + participant only,
+    // no quotedMessage, and no Baileys-side `quoted` option that would
+    // otherwise fabricate `contextInfo.quotedMessage = { conversation: "" }`
+    // and break the threaded-quote affordance on mobile clients.
     expect(sendMessage.mock.calls[0]?.[0]).toBe("1555@s.whatsapp.net");
-    expect(sendMessage.mock.calls[0]?.[1]).toEqual({ text: "hello" });
-    const quoted = requireRecord(requireSendOptions().quoted, "quoted message");
-    expectRecordFields(requireRecord(quoted.key, "quoted key"), {
-      remoteJid: "277038292303944@lid",
-      id: "quoted-1",
-    });
+    const sentContent = sendMessage.mock.calls[0]?.[1] as {
+      text: string;
+      contextInfo: { stanzaId?: string; participant?: string; quotedMessage?: unknown };
+    };
+    expect(sentContent.text).toBe("hello");
+    expect(sentContent.contextInfo.stanzaId).toBe("quoted-1");
+    expect(sentContent.contextInfo.participant).toBe("1234@s.whatsapp.net");
+    expect(sentContent.contextInfo.quotedMessage).toBeUndefined();
+    expect(sendMessage.mock.calls[0]?.[2]).toBeUndefined();
   });
 });
 

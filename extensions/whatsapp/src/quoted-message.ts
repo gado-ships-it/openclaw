@@ -1,5 +1,5 @@
-import type { MiscMessageGenerationOptions } from "baileys";
-import { jidToE164 } from "./text-runtime.js";
+import type { AnyMessageContent, MiscMessageGenerationOptions, proto } from "baileys";
+import { jidToE164, toWhatsappJid } from "./text-runtime.js";
 
 // ── Inbound message metadata cache ──────────────────────────────────────
 // Maps messageId → { participant, participantE164, body, fromMe } so the
@@ -181,4 +181,72 @@ export function buildQuotedMessageOptions(params: {
       message: { conversation: params.messageText ?? "" },
     },
   } as MiscMessageGenerationOptions;
+}
+
+/**
+ * Merge a quoted-reply `contextInfo` into an outbound payload at the content
+ * level. Skips no-op merges so the payload object is preserved by reference
+ * (important for tests/snapshots and for downstream identity-comparison).
+ */
+export function attachQuotedContextInfoToContent(
+  content: AnyMessageContent,
+  contextInfo: proto.IContextInfo | undefined | null,
+): AnyMessageContent {
+  if (!contextInfo) {
+    return content;
+  }
+  const existing = (content as { contextInfo?: proto.IContextInfo }).contextInfo;
+  return {
+    ...content,
+    contextInfo: { ...(existing ?? {}), ...contextInfo },
+  } as AnyMessageContent;
+}
+
+/**
+ * Remove the openclaw-private `quotedContextInfo` extension field from a
+ * Baileys options object so Baileys does not see a key it does not know.
+ */
+export function stripQuotedContextInfo<
+  T extends { quotedContextInfo?: proto.IContextInfo } | undefined,
+>(options: T): MiscMessageGenerationOptions | undefined {
+  if (!options) {
+    return undefined;
+  }
+  const { quotedContextInfo: _, ...rest } = options as {
+    quotedContextInfo?: proto.IContextInfo;
+  } & MiscMessageGenerationOptions;
+  return Object.keys(rest).length > 0 ? (rest as MiscMessageGenerationOptions) : undefined;
+}
+
+/**
+ * Build the minimal `contextInfo` needed for a quoted reply that matches the
+ * wire format used by the official mobile clients (and by wacli/whatsmeow
+ * when called as `SendReaction`/`SendMessage` with a reply target).
+ *
+ * Only `stanzaId` and `participant` are populated; `quotedMessage` is left
+ * unset so the recipient client resolves the original from its local store
+ * via the stanza id. This avoids Baileys' high-level `quoted` option, which
+ * always synthesises `contextInfo.quotedMessage = { conversation: "" }`
+ * whenever the caller does not have the real original message protobuf —
+ * a payload some WhatsApp clients fail to render as a threaded quote.
+ */
+export function buildQuotedContextInfo(params: {
+  messageId?: string | null;
+  remoteJid?: string | null;
+  fromMe?: boolean;
+  participant?: string;
+}): proto.IContextInfo | undefined {
+  const id = params.messageId?.trim();
+  const remoteJid = params.remoteJid?.trim();
+  if (!id || !remoteJid) {
+    return undefined;
+  }
+  const participant = params.participant?.trim()
+    ? toWhatsappJid(params.participant.trim())
+    : undefined;
+  const contextInfo: proto.IContextInfo = { stanzaId: id };
+  if (participant) {
+    contextInfo.participant = participant;
+  }
+  return contextInfo;
 }
