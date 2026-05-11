@@ -382,7 +382,7 @@ export async function deliverMattermostReplyWithDraftPreview(
 export function resolveMattermostEffectiveReplyToId(params: {
   kind: ChatType;
   postId?: string | null;
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   threadRootId?: string | null;
 }): string | undefined {
   if (params.kind === "direct") {
@@ -407,7 +407,7 @@ export function resolveMattermostThreadSessionContext(params: {
   baseSessionKey: string;
   kind: ChatType;
   postId?: string | null;
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   threadRootId?: string | null;
 }): { effectiveReplyToId?: string; sessionKey: string; parentSessionKey?: string } {
   const effectiveReplyToId = resolveMattermostEffectiveReplyToId({

@@ -45,7 +45,7 @@ type TrustedToolsEffectiveContext = {
   groupId?: string | null;
   groupChannel?: string | null;
   groupSpace?: string | null;
-  replyToMode?: "off" | "first" | "all" | "batched";
+  replyToMode?: "off" | "first" | "all" | "batched" | "always";
 };
 
 type ToolsEffectiveCacheEntry = {

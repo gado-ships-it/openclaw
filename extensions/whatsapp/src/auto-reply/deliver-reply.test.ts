@@ -390,6 +390,49 @@ describe("deliverWebReply", () => {
     });
   });
 
+  it("threads to inbound msg.id when replyToMode=always and the agent omits replyToId", async () => {
+    const msg = makeMsg();
+    cacheInboundMessageMeta("work", "15551234567@s.whatsapp.net", "msg-1", {
+      participant: "222@s.whatsapp.net",
+      body: "latest batch body",
+      fromMe: false,
+    });
+
+    await deliverWebReply({
+      replyResult: { text: "hello" },
+      msg,
+      maxMediaBytes: 1024 * 1024,
+      textLimit: 200,
+      replyLogger,
+      replyToMode: "always",
+      skipLog: true,
+    });
+
+    expect(msg.reply).toHaveBeenCalledTimes(1);
+    expectQuotedOptions(mockCallArg(msg.reply, 0, 1, "reply"), {
+      id: "msg-1",
+      fromMe: false,
+      participant: "222@s.whatsapp.net",
+      body: "latest batch body",
+    });
+  });
+
+  it("does not thread when replyToMode is unset and the agent omits replyToId", async () => {
+    const msg = makeMsg();
+
+    await deliverWebReply({
+      replyResult: { text: "hello" },
+      msg,
+      maxMediaBytes: 1024 * 1024,
+      textLimit: 200,
+      replyLogger,
+      skipLog: true,
+    });
+
+    expect(msg.reply).toHaveBeenCalledTimes(1);
+    expect(mockCallArg(msg.reply, 0, 1, "reply")).toBeUndefined();
+  });
+
   it.each(["connection closed", "operation timed out"])(
     "retries text send on transient failure: %s",
     async (errorMessage) => {

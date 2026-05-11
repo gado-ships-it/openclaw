@@ -515,6 +515,7 @@ export async function processMessage(params: {
               responsePrefix,
             },
             replyResolver: params.replyResolver,
+            replyToMode: account.replyToMode,
             route: params.route,
             shouldClearGroupHistory,
           }),

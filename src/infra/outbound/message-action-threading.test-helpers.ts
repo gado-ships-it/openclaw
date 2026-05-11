@@ -48,7 +48,7 @@ export function createOutboundThreadingMock() {
           currentChannelId?: string;
           currentChannelProvider?: string;
           currentMessageId?: string | number;
-          replyToMode?: "off" | "first" | "all" | "batched";
+          replyToMode?: "off" | "first" | "all" | "batched" | "always";
           hasRepliedRef?: { value: boolean };
         };
       },

@@ -22,7 +22,7 @@ export function readSlackReplyBlocks(payload: ReplyPayload) {
 }
 
 export function resolveDeliveredSlackReplyThreadTs(params: {
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   payloadReplyToId?: string;
   replyThreadTs?: string;
 }): string | undefined {
@@ -41,7 +41,7 @@ export async function deliverReplies(params: {
   runtime: RuntimeEnv;
   textLimit: number;
   replyThreadTs?: string;
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   identity?: SlackSendIdentity;
 }) {
   for (const payload of params.replies) {
@@ -127,7 +127,7 @@ export type SlackRespondFn = (payload: {
  * - "all": all replies go to thread
  */
 export function resolveSlackThreadTs(params: {
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   incomingThreadTs: string | undefined;
   messageTs: string | undefined;
   hasReplied: boolean;
@@ -150,7 +150,7 @@ type SlackReplyDeliveryPlan = {
 };
 
 function createSlackReplyReferencePlanner(params: {
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   incomingThreadTs: string | undefined;
   messageTs: string | undefined;
   hasReplied?: boolean;
@@ -172,7 +172,7 @@ function createSlackReplyReferencePlanner(params: {
 }
 
 export function createSlackReplyDeliveryPlan(params: {
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   incomingThreadTs: string | undefined;
   messageTs: string | undefined;
   hasRepliedRef: { value: boolean };

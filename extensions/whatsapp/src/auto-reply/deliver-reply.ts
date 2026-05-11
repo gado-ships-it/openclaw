@@ -3,7 +3,7 @@ import {
   type MessageReceipt,
   type MessageReceiptSourceResult,
 } from "openclaw/plugin-sdk/channel-message";
-import type { MarkdownTableMode } from "openclaw/plugin-sdk/config-contracts";
+import type { MarkdownTableMode, ReplyToMode } from "openclaw/plugin-sdk/config-contracts";
 import { chunkMarkdownTextWithMode, type ChunkMode } from "openclaw/plugin-sdk/reply-chunking";
 import type { ReplyPayload } from "openclaw/plugin-sdk/reply-chunking";
 import {
@@ -98,8 +98,10 @@ export async function deliverWebReply(params: {
   connectionId?: string;
   skipLog?: boolean;
   tableMode?: MarkdownTableMode;
+  replyToMode?: ReplyToMode;
 }): Promise<WhatsAppReplyDeliveryResult> {
   const { replyResult, msg, maxMediaBytes, textLimit, replyLogger, connectionId, skipLog } = params;
+  const alwaysThread = params.replyToMode === "always";
   const replyStarted = Date.now();
   const sendResults: WhatsAppSendResult[] = [];
   const rememberSendResult = (result: WhatsAppSendResult | undefined) => {
@@ -133,15 +135,19 @@ export async function deliverWebReply(params: {
   const mediaList = normalizedReply.mediaUrls ?? [];
 
   const getQuote = () => {
-    if (!replyResult.replyToId) {
+    // Prefer the agent's explicit replyToId. When `replyToMode === "always"`
+    // is configured and the agent did not specify a target, fall back to the
+    // current inbound message id so every outbound is threaded as a quoted
+    // reply (the WhatsApp UI affordance Baileys exposes via `quoted`).
+    const replyToId = replyResult.replyToId ?? (alwaysThread ? msg.id : undefined);
+    if (!replyToId) {
       return undefined;
     }
-    // Use replyToId (not msg.id) so batched payloads quote the correct
-    // per-message target.  Look up cached metadata for the specific
-    // message being quoted — msg.body may be a combined batch body.
-    const cached = lookupInboundMessageMeta(msg.accountId, msg.chatId, replyResult.replyToId);
+    // Look up cached metadata for the specific message being quoted —
+    // msg.body may be a combined batch body for batched payloads.
+    const cached = lookupInboundMessageMeta(msg.accountId, msg.chatId, replyToId);
     return buildQuotedMessageOptions({
-      messageId: replyResult.replyToId,
+      messageId: replyToId,
       remoteJid: msg.chatId,
       fromMe: cached?.fromMe ?? false,
       participant: cached?.participant ?? (msg.chatType === "group" ? msg.senderJid : undefined),

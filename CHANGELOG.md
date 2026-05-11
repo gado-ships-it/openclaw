@@ -6,6 +6,7 @@ Docs: https://docs.openclaw.ai
 
 ### Changes
 
+- Channels: add `replyToMode: "always"` so WhatsApp (and other channels that share the reply-threading policy) automatically thread every outbound text and media reply to the inbound message even when the agent does not set an explicit `replyToId`. Reactions already bind to the message id and are unaffected.
 - Providers/fal: route GPT Image 2 and Nano Banana 2 reference-image edit requests to `/edit` with `image_urls` array, enforce NB2 edit geometry using `aspect_ratio` and `resolution` params, lift Fal edit mode input-image caps to 10 for GPT Image 2 and 14 for Nano Banana 2, and allow aspect-ratio hints in edit mode. (#77295) Thanks @leoge007.
 
 - Build: enable additional low-churn oxlint rules for promise, TypeScript, and runtime footgun checks.

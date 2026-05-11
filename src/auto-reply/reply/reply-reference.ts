@@ -43,7 +43,7 @@ export function createReplyReferencePlanner(options: {
     if (!id) {
       return undefined;
     }
-    if (options.replyToMode === "all") {
+    if (options.replyToMode === "all" || options.replyToMode === "always") {
       return id;
     }
     if (isSingleUseReplyToMode(options.replyToMode) && hasReplied) {
