@@ -154,7 +154,7 @@ export function resolveSlackDisableBlockStreaming(params: {
 }
 
 export function resolveSlackStreamingThreadHint(params: {
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   incomingThreadTs: string | undefined;
   messageTs: string | undefined;
   isThreadReply?: boolean;

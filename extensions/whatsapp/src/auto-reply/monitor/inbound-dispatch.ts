@@ -1,4 +1,5 @@
 import { deliverInboundReplyWithMessageSendContext } from "openclaw/plugin-sdk/channel-message";
+import type { ReplyToMode } from "openclaw/plugin-sdk/config-contracts";
 import { hasVisibleInboundReplyDispatch } from "openclaw/plugin-sdk/inbound-reply-dispatch";
 import type { FinalizedMsgContext } from "openclaw/plugin-sdk/reply-runtime";
 import {
@@ -379,6 +380,7 @@ export async function dispatchWhatsAppBufferedReply(params: {
     connectionId?: string;
     skipLog?: boolean;
     tableMode?: ReturnType<typeof resolveMarkdownTableMode>;
+    replyToMode?: ReplyToMode;
   }) => Promise<WhatsAppReplyDeliveryResult>;
   groupHistories: Map<string, GroupHistoryEntry[]>;
   groupHistoryKey: string;
@@ -397,6 +399,7 @@ export async function dispatchWhatsAppBufferedReply(params: {
   replyLogger: ReturnType<typeof getChildLogger>;
   replyPipeline: WhatsAppDispatchPipeline;
   replyResolver: typeof getReplyFromConfig;
+  replyToMode?: ReplyToMode;
   route: ReturnType<typeof resolveAgentRoute>;
   shouldClearGroupHistory: boolean;
 }) {
@@ -447,6 +450,7 @@ export async function dispatchWhatsAppBufferedReply(params: {
       connectionId: params.connectionId,
       skipLog: false,
       tableMode,
+      replyToMode: params.replyToMode,
     });
     if (!delivery.providerAccepted) {
       params.replyLogger.warn(

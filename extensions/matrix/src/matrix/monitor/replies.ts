@@ -36,7 +36,7 @@ export async function deliverMatrixReplies(params: {
   client: MatrixClient;
   runtime: RuntimeEnv;
   textLimit: number;
-  replyToMode: "off" | "first" | "all" | "batched";
+  replyToMode: "off" | "first" | "all" | "batched" | "always";
   threadId?: string;
   accountId?: string;
   mediaLocalRoots?: readonly string[];

@@ -5,7 +5,7 @@ import type {
 import type { BlockStreamingCoalesceConfig, DmPolicy, GroupPolicy } from "./runtime-api.js";
 import type { SecretInput } from "./secret-input.js";
 
-export type MattermostReplyToMode = "off" | "first" | "all" | "batched";
+export type MattermostReplyToMode = "off" | "first" | "all" | "batched" | "always";
 export type MattermostChatTypeKey = "direct" | "channel" | "group";
 
 export type MattermostChatMode = "oncall" | "onmessage" | "onchar";

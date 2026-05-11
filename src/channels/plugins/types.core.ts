@@ -399,7 +399,7 @@ export type ChannelThreadingAdapter = {
     cfg: OpenClawConfig;
     accountId?: string | null;
     chatType?: string | null;
-  }) => "off" | "first" | "all" | "batched";
+  }) => "off" | "first" | "all" | "batched" | "always";
   /**
    * When replyToMode is "off", allow explicit reply tags/directives to keep replyToId.
    *
@@ -463,7 +463,7 @@ export type ChannelThreadingToolContext = {
   currentChannelProvider?: ChannelId;
   currentThreadTs?: string;
   currentMessageId?: string | number;
-  replyToMode?: "off" | "first" | "all" | "batched";
+  replyToMode?: "off" | "first" | "all" | "batched" | "always";
   hasRepliedRef?: { value: boolean };
   /**
    * When true, skip cross-context decoration (e.g., "[from X]" prefix).

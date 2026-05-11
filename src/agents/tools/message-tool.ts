@@ -539,7 +539,7 @@ type MessageToolOptions = {
   currentThreadTs?: string;
   agentThreadId?: string | number;
   currentMessageId?: string | number;
-  replyToMode?: "off" | "first" | "all" | "batched";
+  replyToMode?: "off" | "first" | "all" | "batched" | "always";
   hasRepliedRef?: { value: boolean };
   sandboxRoot?: string;
   requireExplicitTarget?: boolean;

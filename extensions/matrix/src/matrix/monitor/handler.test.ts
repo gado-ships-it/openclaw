@@ -2793,7 +2793,7 @@ describe("matrix monitor handler draft streaming", () => {
   };
 
   function createStreamingHarness(opts?: {
-    replyToMode?: "off" | "first" | "all" | "batched";
+    replyToMode?: "off" | "first" | "all" | "batched" | "always";
     blockStreamingEnabled?: boolean;
     streaming?: "partial" | "quiet" | "progress";
     previewToolProgressEnabled?: boolean;

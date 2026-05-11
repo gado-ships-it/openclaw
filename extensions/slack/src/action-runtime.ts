@@ -90,7 +90,7 @@ export type SlackActionContext = {
   /** Current thread timestamp for auto-threading. */
   currentThreadTs?: string;
   /** Reply-to mode for auto-threading. */
-  replyToMode?: "off" | "first" | "all" | "batched";
+  replyToMode?: "off" | "first" | "all" | "batched" | "always";
   /** Mutable ref to track if a reply was sent for single-use reply modes. */
   hasRepliedRef?: { value: boolean };
   /** Allowed local media directories for file uploads. */

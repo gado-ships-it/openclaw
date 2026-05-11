@@ -101,7 +101,7 @@ export function createOpenClawTools(
     /** Current inbound message id for action fallbacks. */
     currentMessageId?: string | number;
     /** Reply-to mode for auto-threading. */
-    replyToMode?: "off" | "first" | "all" | "batched";
+    replyToMode?: "off" | "first" | "all" | "batched" | "always";
     /** Mutable ref to track if a reply was sent (for "first" mode). */
     hasRepliedRef?: { value: boolean };
     /** If true, the model has native vision capability */

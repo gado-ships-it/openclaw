@@ -192,7 +192,7 @@ function createPreparedSlackMessage(params?: {
     thread_ts?: string;
     user: string;
   }>;
-  replyToMode?: "off" | "first" | "all" | "batched";
+  replyToMode?: "off" | "first" | "all" | "batched" | "always";
   isDirectMessage?: boolean;
   route?: Partial<{
     agentId: string;
@@ -617,7 +617,7 @@ vi.mock("../replies.js", () => ({
   deliverReplies: deliverRepliesMock,
   readSlackReplyBlocks: () => undefined,
   resolveDeliveredSlackReplyThreadTs: (params: {
-    replyToMode: "off" | "first" | "all" | "batched";
+    replyToMode: "off" | "first" | "all" | "batched" | "always";
     payloadReplyToId?: string;
     replyThreadTs?: string;
   }) =>

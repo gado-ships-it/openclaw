@@ -1,7 +1,7 @@
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import type { MatrixQaProvisionedTopology } from "./topology.js";
 
-type MatrixQaReplyToMode = "off" | "first" | "all" | "batched";
+type MatrixQaReplyToMode = "off" | "first" | "all" | "batched" | "always";
 type MatrixQaThreadRepliesMode = "off" | "inbound" | "always";
 type MatrixQaDmPolicy = "allowlist" | "disabled" | "open" | "pairing";
 type MatrixQaGroupPolicy = "allowlist" | "disabled" | "open";

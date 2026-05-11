@@ -110,7 +110,7 @@ export function createReplyToModeFilter(
       }
       return copyReplyPayloadMetadata(payload, { ...payload, replyToId: undefined });
     }
-    if (mode === "all") {
+    if (mode === "all" || mode === "always") {
       return payload;
     }
     if (isSingleUseReplyToMode(mode) && hasThreaded) {
